@@ -32,3 +32,19 @@
   margin-right: 4px;
   font-size: 13px;
 }
+
+@media screen and (max-width: 767px) {
+  .movie {
+    width: 32%;
+    margin-bottom: 40px;
+  }
+  .movie_title {
+    font-size: 14px;
+  }
+  .movie_title .title_year {
+    font-size: 13px;
+  }
+  .movie_summary {
+    font-size: 13px;
+  }
+}
