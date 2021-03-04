@@ -6,6 +6,7 @@ body,
   background-color: rgb(20, 20, 20);
   color: rgb(254, 254, 254);
   font-family: "Roboto", "Noto Sans KR", serif;
+  position: relative;
 }
 
 .container {
@@ -15,11 +16,10 @@ body,
 }
 
 .loader {
-  width: 96%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .loader .loader_text {
