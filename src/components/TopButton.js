@@ -26,11 +26,14 @@ function TopButton() {
     const scrollEvent = () => {
       window.addEventListener("scroll", appearArrow);
     };
+
     scrollEvent();
+
     return () => {
       const removeScrollEvent = () => {
         window.removeEventListener("scroll", appearArrow);
       };
+
       removeScrollEvent();
     };
   }, []);

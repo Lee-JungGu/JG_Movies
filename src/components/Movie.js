@@ -4,6 +4,10 @@ import { Link } from "react-router-dom";
 import "./Movie.css";
 
 function Movie({ year, title, summary, poster, genres, rating }) {
+  const SUMMARY_TEXT_LIMIT = 100;
+  const moveTop = () => {
+    window.scroll(0, 0);
+  };
   return (
     <Link
       to={{
@@ -18,6 +22,7 @@ function Movie({ year, title, summary, poster, genres, rating }) {
         },
       }}
       className="movie"
+      onClick={moveTop}
     >
       <div>
         <img src={poster} alt={title} title={title} />
@@ -36,7 +41,9 @@ function Movie({ year, title, summary, poster, genres, rating }) {
             ))}
           </ul>
           <p className="movie_summary">
-            {summary.length > 160 ? `${summary.slice(0, 160)}...` : summary}
+            {summary.length > SUMMARY_TEXT_LIMIT
+              ? `${summary.slice(0, SUMMARY_TEXT_LIMIT)}...`
+              : summary}
           </p>
         </div>
       </div>

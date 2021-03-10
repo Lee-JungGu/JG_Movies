@@ -2,7 +2,150 @@
   width: 100%;
   height: 100vh;
   margin-top: 100px;
+  position: relative;
 }
-.movie_info h1 {
-  color: #fff;
+.movie_info .info_backgrond {
+  position: relative;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 100vh;
+  opacity: 0.1;
+  overflow: hidden;
+}
+.movie_info .info_backgrond img {
+  width: 100%;
+  position: absolute;
+  top: -50%;
+}
+
+.movie_info .info_info {
+  width: 70%;
+  position: absolute;
+  left: 50%;
+  top: 60px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.movie_info .info_info .info_title_img {
+  width: 40%;
+}
+.movie_info .info_info .info_title_img img {
+  width: 100%;
+}
+
+.movie_info .info_info .info_data {
+  width: 55%;
+}
+
+.movie_info .info_info .info_data .info_title {
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.movie_info .info_info .info_data .info_rating {
+  margin-top: 40px;
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.movie_info .info_info .info_data .info_genres {
+  margin-top: 40px;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+.movie_info .info_info .info_data .info_genres li {
+  margin-right: 20px;
+  margin-bottom: 12px;
+  font-size: 20px;
+}
+.movie_info .info_info .info_data .info_genres li:last-child {
+  margin-right: 0;
+}
+
+.movie_info .info_info .info_data .info_summary {
+  margin-top: 28px;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+@media screen and (max-width: 767px) {
+  .movie_info .info_backgrond {
+    position: relative;
+    top: 0;
+    left: 0;
+    transform: translateX(0);
+    width: 100%;
+    height: 100vh;
+  }
+  .movie_info .info_backgrond img {
+    width: auto;
+    height: 100vh;
+    position: absolute;
+    top: -50px;
+  }
+
+  .movie_info .info_info {
+    width: 96%;
+    position: absolute;
+    left: 50%;
+    top: 20px;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .movie_info .info_info .info_title_img {
+    width: 50%;
+  }
+  .movie_info .info_info .info_title_img img {
+    width: 100%;
+  }
+
+  .movie_info .info_info .info_data {
+    width: 48%;
+    margin-top: 5%;
+  }
+
+  .movie_info .info_info .info_data .info_title {
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  .movie_info .info_info .info_data .info_rating {
+    margin-top: 20px;
+    font-size: 18px;
+    font-weight: 500;
+  }
+
+  .movie_info .info_info .info_data .info_genres {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+  }
+  .movie_info .info_info .info_data .info_genres li {
+    margin-right: 12px;
+    margin-bottom: 12px;
+    font-size: 14px;
+  }
+  .movie_info .info_info .info_data .info_genres li:last-child {
+    margin-right: 0;
+  }
+
+  .movie_info .info_info .info_data .info_summary {
+    margin-top: 28px;
+    padding-bottom: 40px;
+    font-size: 18px;
+    line-height: 1.5;
+    position: absolute;
+    top: 100%;
+    left: 0;
+  }
 }
