@@ -1,8 +1,11 @@
 import React from "react";
 import axios from "axios";
-import Header from "../components/Header";
+import Genre from "../components/Genre";
+import Loader from "../components/Loader";
 import Movie from "../components/Movie";
 import Footer from "../components/Footer";
+import "./Main.css";
+import "../components/Reset.css";
 
 class Main extends React.Component {
   state = {
@@ -10,82 +13,107 @@ class Main extends React.Component {
     movies: [],
     apiUrl:
       "https://yts.mx/api/v2/list_movies.json?sort_by=rating&limit=24&genre=all",
+    pageNumber: 1,
   };
-
   getMovies = async () => {
     const {
       data: {
         data: { movies },
       },
     } = await axios.get(this.state.apiUrl);
-    this.setState({ movies, isLoading: false });
+    this.setState({ isLoading: false, movies });
   };
 
-  clickMenu = (props) => {
-    const checkBox = document.getElementById("gnb_btn");
-    checkBox.checked ? (checkBox.checked = false) : (checkBox.checked = false);
+  clickGetGenre = (props) => {
     const {
       target: {
         dataset: { genre },
       },
     } = props;
-    this.state.apiUrl ===
-      `https://yts.mx/api/v2/list_movies.json?sort_by=rating&limit=24&genre=${genre}` ||
+
+    this.state.apiUrl !==
+      `https://yts.mx/api/v2/list_movies.json?sort_by=rating&limit=24&genre=${genre}` &&
       this.setState({
-        apiUrl: `https://yts.mx/api/v2/list_movies.json?sort_by=rating&limit=24&genre=${genre}`,
         isLoading: true,
+        apiUrl: `https://yts.mx/api/v2/list_movies.json?sort_by=rating&limit=24&genre=${genre}`,
       });
+
+    window.scroll({
+      top: 0,
+      left: 0,
+      behavior: "smooth",
+    });
+
+    this.setState({ pageNumber: 1 });
   };
 
-  scrollGetPage = () => {
-    document.addEventListener("scroll", () => {
-      const scrollTop = document.scrollingElement.scrollTop;
-      const scrollBottom =
-        document.scrollingElement.scrollHeight -
-        document.scrollingElement.clientHeight;
-      const numberOfMovie = this.state.movies.length;
-      const limitPage = 16;
-      for (let i = 1; i < limitPage; i++) {
-        if (scrollTop === scrollBottom && numberOfMovie === 24 * i) {
-          const getNextPage = async () => {
-            const {
-              data: {
-                data: { movies },
-              },
-            } = await axios.get(`${this.state.apiUrl}&page=${i + 1}`);
-            const newPage = this.state.movies.concat(movies);
-            this.setState({ movies: newPage });
-          };
-          getNextPage();
-        }
+  getPage = async () => {
+    const scrollTop = document.scrollingElement.scrollTop;
+    const scrollBottom =
+      document.scrollingElement.scrollHeight -
+      document.scrollingElement.clientHeight -
+      200;
+    const numberOfMovie = this.state.movies.length;
+    const pageNumber = this.state.pageNumber;
+    const loader = document.querySelector(".loader_scroll");
+    const isLoading = this.state.isLoading;
+    const checkLoading = loader.className.includes("show");
+    if (
+      scrollTop >= scrollBottom &&
+      numberOfMovie === 24 * pageNumber &&
+      !checkLoading &&
+      !isLoading
+    ) {
+      loader.classList.add("show");
+      try {
+        const {
+          data: {
+            data: { movies },
+          },
+        } = await axios.get(`${this.state.apiUrl}&page=${pageNumber + 1}`);
+        const newPage = this.state.movies.concat(movies);
+        const limitPage = 16;
+        pageNumber < limitPage &&
+          this.setState({ movies: newPage, pageNumber: pageNumber + 1 });
+      } finally {
+        loader.classList.remove("show");
       }
-    });
+    }
+  };
+  scrollEvent = () => {
+    document.addEventListener("scroll", this.getPage);
+  };
+  removeScrollEvent = () => {
+    document.removeEventListener("scroll", this.getPage);
   };
 
   componentDidMount() {
     this.getMovies();
-    this.scrollGetPage();
+    this.scrollEvent();
   }
 
   componentDidUpdate() {
     this.state.isLoading === false || this.getMovies();
   }
 
+  componentWillUnmount() {
+    this.removeScrollEvent();
+  }
+
   render() {
     const { isLoading, movies } = this.state;
     return (
       <section className="container">
-        <Header event={this.clickMenu} />
+        <Loader name={"loader_scroll"} />
         {isLoading ? (
-          <div className="loader">
-            <span className="loader_text">Loding...</span>
-          </div>
+          <Loader name={"loader"} />
         ) : (
-          <div className="warp">
+          <div className="contents">
+            <Genre getGenre={this.clickGetGenre} />
             <div className="movies">
-              {movies.map((movie) => (
+              {movies.map((movie, index) => (
                 <Movie
-                  key={movie.id}
+                  key={index}
                   id={movie.id}
                   year={movie.year}
                   genres={movie.genres}

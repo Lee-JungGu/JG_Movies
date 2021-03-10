@@ -1,6 +1,21 @@
 .movie {
   width: 12%;
   margin-bottom: 40px;
+  cursor: pointer;
+  position: relative;
+}
+.movie::after {
+  display: none;
+  content: "";
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.2);
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.movie:hover::after {
+  display: block;
 }
 .movie img {
   width: 100%;

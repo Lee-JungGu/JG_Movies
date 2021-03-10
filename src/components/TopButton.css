@@ -1,0 +1,12 @@
+.top_button {
+  width: fit-content;
+  position: fixed;
+  bottom: 10%;
+  right: 4%;
+  z-index: 999;
+}
+.top_button i {
+  font-size: 40px;
+  color: #ebcc66;
+  opacity: 0.7;
+}
