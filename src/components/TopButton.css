@@ -1,9 +1,11 @@
 .top_button {
+  all: unset;
   width: fit-content;
   position: fixed;
   bottom: 10%;
   right: 4%;
   z-index: 999;
+  cursor: pointer;
 }
 .top_button i {
   font-size: 40px;

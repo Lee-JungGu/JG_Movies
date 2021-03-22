@@ -45,6 +45,7 @@
 .movie_info .info_info .info_data .info_title {
   font-size: 32px;
   font-weight: 700;
+  line-height: 1.2;
 }
 
 .movie_info .info_info .info_data .info_rating {
