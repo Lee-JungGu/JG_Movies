@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
-import "./TopButton.css";
+import "../css/TopButton.css";
 
 function TopButton() {
-  const moveTop = (e) => {
-    e.preventDefault();
+  const moveTop = (event) => {
+    event.preventDefault();
 
     window.scrollTo({
       top: 0,

@@ -1,5 +1,5 @@
 import React from "react";
-import "./Header.css";
+import "../css/Header.css";
 import { Link } from "react-router-dom";
 
 function Header() {
@@ -14,18 +14,20 @@ function Header() {
   return (
     <header className="header">
       <h1 className="logo" onClick={moveTop}>
-        <Link to="/">JG Movies</Link>
+        <Link to="/" replace>
+          JG Movies
+        </Link>
       </h1>
       <nav className="gnb">
         <ul>
           <li onClick={moveTop}>
-            <Link to="/">
+            <Link to="/" replace>
               <i className="fas fa-home"></i>
             </Link>
           </li>
 
           <li onClick={moveTop}>
-            <Link to="/Search">
+            <Link to="/Search" replace>
               <i className="fas fa-search"></i>
             </Link>
           </li>

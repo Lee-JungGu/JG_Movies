@@ -4,10 +4,12 @@ import Genre from "../components/Genre";
 import Loader from "../components/Loader";
 import Movie from "../components/Movie";
 import Footer from "../components/Footer";
-import "./Main.css";
-import "../components/Reset.css";
+import "../css/Main.css";
+import "../css/Reset.css";
 
 class Main extends React.Component {
+  _isMounted = true;
+
   state = {
     isLoading: true,
     movies: [],
@@ -15,15 +17,20 @@ class Main extends React.Component {
       "https://yts.mx/api/v2/list_movies.json?sort_by=rating&limit=24&genre=all",
     pageNumber: 1,
   };
+
+  //영화를 가져오는 함수
   getMovies = async () => {
     const {
       data: {
         data: { movies },
       },
     } = await axios.get(this.state.apiUrl);
-    this.setState({ isLoading: false, movies });
+    if (this._isMounted) {
+      this.setState({ isLoading: false, movies });
+    }
   };
 
+  //클릭시 해당 장르 영와를 가져오는 함수
   clickGetGenre = (props) => {
     const {
       target: {
@@ -38,53 +45,61 @@ class Main extends React.Component {
         apiUrl: `https://yts.mx/api/v2/list_movies.json?sort_by=rating&limit=24&genre=${genre}`,
       });
 
+    this.animateScrollTop();
+    this.setState({ pageNumber: 1 });
+  };
+
+  //부드러운 마우스 스크롤 탑 애니메이션
+  animateScrollTop = () => {
     window.scroll({
       top: 0,
       left: 0,
       behavior: "smooth",
     });
-
-    this.setState({ pageNumber: 1 });
   };
 
-  getPage = async () => {
+  //스크롤이 하단에 있을때 추가 영화를 가져오는 함수
+  getMoviePage = async () => {
+    const BOTTOM_SPACE = 200;
     const scrollTop = document.scrollingElement.scrollTop;
     const scrollBottom =
       document.scrollingElement.scrollHeight -
       document.scrollingElement.clientHeight -
-      200;
+      BOTTOM_SPACE;
     const numberOfMovie = this.state.movies.length;
     const pageNumber = this.state.pageNumber;
     const loader = document.querySelector(".loader_scroll");
     const isLoading = this.state.isLoading;
     const checkLoading = loader.className.includes("show");
+    const MOVIES_PER_PAGE = 24;
+
     if (
       scrollTop >= scrollBottom &&
-      numberOfMovie === 24 * pageNumber &&
+      numberOfMovie === MOVIES_PER_PAGE * pageNumber &&
       !checkLoading &&
       !isLoading
     ) {
       loader.classList.add("show");
-      try {
-        const {
-          data: {
-            data: { movies },
-          },
-        } = await axios.get(`${this.state.apiUrl}&page=${pageNumber + 1}`);
-        const newPage = this.state.movies.concat(movies);
-        const limitPage = 16;
-        pageNumber < limitPage &&
-          this.setState({ movies: newPage, pageNumber: pageNumber + 1 });
-      } finally {
-        loader.classList.remove("show");
-      }
+      const {
+        data: {
+          data: { movies },
+        },
+      } = await axios.get(`${this.state.apiUrl}&page=${pageNumber + 1}`);
+      const newPage = [...this.state.movies, ...movies];
+      const limitPage = 16;
+      pageNumber < limitPage &&
+        this._isMounted &&
+        this.setState({ movies: newPage, pageNumber: pageNumber + 1 });
+      loader.classList.remove("show");
     }
   };
+
   scrollEvent = () => {
-    document.addEventListener("scroll", this.getPage);
+    document.addEventListener("scroll", this.getMoviePage);
   };
+
   removeScrollEvent = () => {
-    document.removeEventListener("scroll", this.getPage);
+    document.removeEventListener("scroll", this.getMoviePage);
   };
 
   componentDidMount() {
@@ -93,11 +108,13 @@ class Main extends React.Component {
   }
 
   componentDidUpdate() {
-    this.state.isLoading === false || this.getMovies();
+    this.state.isLoading && this.getMovies();
   }
 
   componentWillUnmount() {
     this.removeScrollEvent();
+    // 비동기 작업 중 페이지 이동시 오류 방지
+    this._isMounted = false;
   }
 
   render() {

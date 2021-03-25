@@ -4,7 +4,7 @@ import Loader from "../components/Loader";
 import SearchBox from "../components/SearchBox";
 import Movie from "../components/Movie";
 import Footer from "../components/Footer";
-import "./Search.css";
+import "../css/Search.css";
 
 function Search() {
   const [isLoading, setIsLoading] = useState(true);
@@ -13,105 +13,76 @@ function Search() {
     "https://yts.mx/api/v2/list_movies.json?sort_by=rating&limit=24"
   );
   const [pageNumber, setPageNumber] = useState(1);
-  const searchMount = useRef(true);
+  const firstMounted = useRef(true);
+  const isMounted = useRef(true);
 
-  const searchUseKey = async (props) => {
+  //API URL에 검색어를 적용시키는 함수
+  const getSearchPage = async (value) => {
     const loader = document.querySelector(".loader_scroll");
+    const NEW_API_URL = `https://yts.mx/api/v2/list_movies.json?sort_by=rating&limit=24&query_term=${value}`;
+    if (!loader.className.includes("show") && value !== "") {
+      loader.classList.add("show");
+      await axios.get(NEW_API_URL);
+      if (isMounted.current) {
+        setApiUrl(NEW_API_URL);
+        setPageNumber(1);
+      }
+      loader.classList.remove("show");
+    }
+  };
+  // 엔터키로 검색하는 함수
+  const searchUseKey = async (props) => {
     const {
       target: { value },
     } = props;
-    const NEW_API_URL = `https://yts.mx/api/v2/list_movies.json?sort_by=rating&limit=24&query_term=${value}`;
 
-    if (props.key === "Enter" && !loader.className.includes("show")) {
-      try {
-        loader.classList.add("show");
-        await axios.get(NEW_API_URL);
-        setApiUrl(NEW_API_URL);
-      } finally {
-        setPageNumber(1);
-        loader.classList.remove("show");
-      }
-    }
+    props.key === "Enter" && getSearchPage(value);
   };
-
-  const searchUseClick = async () => {
+  // 검색 버튼으로 검색하는 함수
+  const searchUseClick = () => {
     const value = document.querySelector(".search_box input").value;
-    const NEW_API_URL = `https://yts.mx/api/v2/list_movies.json?sort_by=rating&limit=24&query_term=${value}`;
-
-    try {
-      await axios.get(NEW_API_URL);
-      setApiUrl(NEW_API_URL);
-    } finally {
-      setPageNumber(1);
-    }
+    getSearchPage(value);
   };
 
-  const getPage = async () => {
+  //스크롤이 하단에 있을때 추가 영화를 가져오는 함수
+  const getMoviePage = async () => {
+    const BOTTOM_SPACE = 200;
     const scrollTop = document.scrollingElement.scrollTop;
     const scrollBottom =
       document.scrollingElement.scrollHeight -
       document.scrollingElement.clientHeight -
-      200;
-    const numberOfMovie = movies.length;
+      BOTTOM_SPACE;
     const loader = document.querySelector(".loader_scroll");
+    const MOVIES_PER_PAGE = 24;
     if (
       scrollTop >= scrollBottom &&
-      numberOfMovie === 24 * pageNumber &&
+      movies.length === MOVIES_PER_PAGE * pageNumber &&
       !loader.className.includes("show")
     ) {
       loader.classList.add("show");
-      try {
-        const {
-          data: {
-            data: { movies: searchMovies },
-          },
-        } = await axios.get(`${apiUrl}&page=${pageNumber + 1}`);
-        const newPage = movies.concat(searchMovies);
-        const limitPage = 16;
-        if (pageNumber < limitPage) {
-          setPageNumber(pageNumber + 1);
-          setMovies(newPage);
-        }
-      } finally {
-        loader.classList.remove("show");
+      const {
+        data: {
+          data: { movies: searchMovies },
+        },
+      } = await axios.get(`${apiUrl}&page=${pageNumber + 1}`);
+      const newPage = [...movies, ...searchMovies];
+      const limitPage = 16;
+
+      if (pageNumber < limitPage && isMounted.current) {
+        setPageNumber(pageNumber + 1);
+        setMovies(newPage);
       }
+      loader.classList.remove("show");
     }
   };
 
   const scrollEvent = () => {
-    document.addEventListener("scroll", getPage);
+    document.addEventListener("scroll", getMoviePage);
   };
+
   const removeScrollEvent = () => {
-    document.removeEventListener("scroll", getPage);
+    document.removeEventListener("scroll", getMoviePage);
   };
-
-  useEffect(() => {
-    const getMovies = async () => {
-      try {
-        const {
-          data: {
-            data: { movies },
-          },
-        } = await axios.get(apiUrl);
-        if (movies === undefined) {
-          console.log("그런거 없어요");
-          setMovies([]);
-        } else {
-          setMovies(movies);
-        }
-      } catch {
-        console.log("에러가 났어요");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (searchMount.current) {
-      searchMount.current = false;
-    } else {
-      getMovies();
-    }
-  }, [apiUrl]);
 
   useEffect(() => {
     scrollEvent();
@@ -119,6 +90,32 @@ function Search() {
       removeScrollEvent();
     };
   });
+
+  // 검색시 해당 영화를 보여주고 없을시 빈 화면 출력
+  useEffect(() => {
+    const getMovies = async () => {
+      const {
+        data: {
+          data: { movies },
+        },
+      } = await axios.get(apiUrl);
+      if (movies === undefined) return setMovies([]);
+      if (isMounted.current) {
+        setMovies(movies);
+        setIsLoading(false);
+      }
+    };
+
+    if (firstMounted.current) return (firstMounted.current = false);
+    getMovies();
+  }, [apiUrl]);
+
+  // 비동기 작업 중 페이지 이동시 오류 방지
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   return (
     <section className="container_sc">

@@ -1,6 +1,5 @@
 import React from "react";
-// import PropTypes from "prop-types";
-import "./MovieInfo.css";
+import "../css/MovieInfo.css";
 
 class MovieInfo extends React.Component {
   componentDidMount() {

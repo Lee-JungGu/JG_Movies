@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
-import "./Movie.css";
+import "../css/Movie.css";
 
 function Movie({ year, title, summary, poster, genres, rating }) {
   const SUMMARY_TEXT_LIMIT = 100;

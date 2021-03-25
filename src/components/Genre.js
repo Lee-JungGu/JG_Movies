@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import "./Genre.css";
+import "../css/Genre.css";
 
 function Genre({ getGenre }) {
   let startX = 0;
