@@ -6,7 +6,11 @@ import "../css/Movie.css";
 function Movie({ year, title, summary, poster, genres, rating }) {
   const SUMMARY_TEXT_LIMIT = 100;
   const moveTop = () => {
-    window.scroll(0, 0);
+    window.scroll({
+      top: 0,
+      left: 0,
+      behavior: "smooth",
+    });
   };
   return (
     <Link

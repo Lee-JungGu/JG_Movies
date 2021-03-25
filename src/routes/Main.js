@@ -45,15 +45,15 @@ class Main extends React.Component {
         apiUrl: `https://yts.mx/api/v2/list_movies.json?sort_by=rating&limit=24&genre=${genre}`,
       });
 
-    this.animateScrollTop();
+    this.animateScrollTop(0, 0);
     this.setState({ pageNumber: 1 });
   };
 
   //부드러운 마우스 스크롤 탑 애니메이션
-  animateScrollTop = () => {
+  animateScrollTop = (x, y) => {
     window.scroll({
-      top: 0,
-      left: 0,
+      top: x,
+      left: y,
       behavior: "smooth",
     });
   };
@@ -102,8 +102,21 @@ class Main extends React.Component {
     document.removeEventListener("scroll", this.getMoviePage);
   };
 
-  componentDidMount() {
-    this.getMovies();
+  async componentDidMount() {
+    const movies = await JSON.parse(localStorage.getItem("movies"));
+    const apiUrl = localStorage.getItem("apiUrl");
+    const lastScrollPosition = localStorage.getItem("lastScrollPosition");
+    movies.length === 0
+      ? this.getMovies()
+      : this.setState({
+          movies,
+          isLoading: false,
+          pageNumber: movies.length / 24,
+          apiUrl,
+        });
+    window.scrollTo(0, lastScrollPosition);
+    console.log(this.state.movies);
+    console.log(lastScrollPosition);
     this.scrollEvent();
   }
 
@@ -113,6 +126,12 @@ class Main extends React.Component {
 
   componentWillUnmount() {
     this.removeScrollEvent();
+    localStorage.setItem("movies", JSON.stringify(this.state.movies));
+    localStorage.setItem("apiUrl", this.state.apiUrl);
+    localStorage.setItem(
+      "lastScrollPosition",
+      document.scrollingElement.scrollTop
+    );
     // 비동기 작업 중 페이지 이동시 오류 방지
     this._isMounted = false;
   }
