@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import axios from "axios";
 import Loader from "../components/Loader";
 import SearchBox from "../components/SearchBox";
@@ -7,27 +7,32 @@ import Footer from "../components/Footer";
 import "../css/Search.css";
 
 function Search() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [movies, setMovies] = useState([]);
-  const [apiUrl, setApiUrl] = useState(
-    "https://yts.mx/api/v2/list_movies.json?sort_by=rating&limit=24"
+  const [isLoading, setIsLoading] = useState(false);
+  const [movies, setMovies] = useState(
+    () => JSON.parse(localStorage.getItem("movies_search")) || []
   );
-  const [pageNumber, setPageNumber] = useState(1);
+  const [apiUrl, setApiUrl] = useState(
+    () =>
+      localStorage.getItem("apiUrl_search") ||
+      "https://yts.mx/api/v2/list_movies.json?sort_by=rating&limit=24"
+  );
+  const [pageNumber, setPageNumber] = useState(
+    movies.length !== 0 ? movies.length / 24 : 1
+  );
   const firstMounted = useRef(true);
   const isMounted = useRef(true);
 
   //API URL에 검색어를 적용시키는 함수
   const getSearchPage = async (value) => {
-    const loader = document.querySelector(".loader_scroll");
     const NEW_API_URL = `https://yts.mx/api/v2/list_movies.json?sort_by=rating&limit=24&query_term=${value}`;
-    if (!loader.className.includes("show") && value !== "") {
-      loader.classList.add("show");
+    if (!isLoading && value !== "") {
+      setIsLoading(true);
       await axios.get(NEW_API_URL);
       if (isMounted.current) {
         setApiUrl(NEW_API_URL);
         setPageNumber(1);
       }
-      loader.classList.remove("show");
+      setIsLoading(false);
     }
   };
   // 엔터키로 검색하는 함수
@@ -53,11 +58,13 @@ function Search() {
       document.scrollingElement.clientHeight -
       BOTTOM_SPACE;
     const loader = document.querySelector(".loader_scroll");
+    const checkLoader = loader.className.includes("show");
     const MOVIES_PER_PAGE = 24;
     if (
       scrollTop >= scrollBottom &&
       movies.length === MOVIES_PER_PAGE * pageNumber &&
-      !loader.className.includes("show")
+      movies.length % MOVIES_PER_PAGE === 0 &&
+      !checkLoader
     ) {
       loader.classList.add("show");
       const {
@@ -75,16 +82,15 @@ function Search() {
       loader.classList.remove("show");
     }
   };
-
   const scrollEvent = () => {
     document.addEventListener("scroll", getMoviePage);
   };
-
   const removeScrollEvent = () => {
     document.removeEventListener("scroll", getMoviePage);
   };
 
-  useEffect(() => {
+  //비동기로 작업할때 loader의 className을 인지하지 못하는 오류를 개선
+  useLayoutEffect(() => {
     scrollEvent();
     return () => {
       removeScrollEvent();
@@ -110,9 +116,29 @@ function Search() {
     getMovies();
   }, [apiUrl]);
 
-  // 비동기 작업 중 페이지 이동시 오류 방지
   useEffect(() => {
+    window.localStorage.setItem("movies_search", JSON.stringify(movies));
+    window.localStorage.setItem("apiUrl_search", apiUrl);
+  }, [movies, apiUrl]);
+
+  useLayoutEffect(() => {
+    const lastScrollPosition = localStorage.getItem(
+      "lastScrollPosition_search"
+    );
+    window.scrollTo(0, lastScrollPosition);
     return () => {
+      window.localStorage.setItem(
+        "lastScrollPosition_search",
+        document.scrollingElement.scrollTop
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    // window.scrollTo(0, 0);
+
+    return () => {
+      // 비동기 작업 중 페이지 이동시 오류 방지
       isMounted.current = false;
     };
   }, []);
@@ -120,11 +146,11 @@ function Search() {
   return (
     <section className="container_sc">
       <SearchBox searchUseKey={searchUseKey} searchUseClick={searchUseClick} />
-      <Loader name={"loader_scroll"} />
       {isLoading ? (
-        <div></div>
+        <Loader name={"loader"} />
       ) : (
         <div className="contents">
+          <Loader name={"loader_scroll"} />
           <div className="movies">
             {movies.map((movie, index) => (
               <Movie

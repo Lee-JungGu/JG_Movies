@@ -7,7 +7,6 @@ function Genre({ getGenre }) {
   let currentX = 0;
   const dragStart = (e) => {
     startX = e.changedTouches[0].clientX;
-    // console.log("start", e);
   };
   const drag = (e) => {
     const MAX_LEFT = 20;

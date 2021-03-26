@@ -60,6 +60,7 @@ class Main extends React.Component {
 
   //스크롤이 하단에 있을때 추가 영화를 가져오는 함수
   getMoviePage = async () => {
+    if (this.state.isLoading) return;
     const BOTTOM_SPACE = 200;
     const scrollTop = document.scrollingElement.scrollTop;
     const scrollBottom =
@@ -69,15 +70,14 @@ class Main extends React.Component {
     const numberOfMovie = this.state.movies.length;
     const pageNumber = this.state.pageNumber;
     const loader = document.querySelector(".loader_scroll");
-    const isLoading = this.state.isLoading;
     const checkLoading = loader.className.includes("show");
     const MOVIES_PER_PAGE = 24;
 
     if (
       scrollTop >= scrollBottom &&
       numberOfMovie === MOVIES_PER_PAGE * pageNumber &&
-      !checkLoading &&
-      !isLoading
+      numberOfMovie % MOVIES_PER_PAGE === 0 &&
+      !checkLoading
     ) {
       loader.classList.add("show");
       const {
@@ -103,10 +103,12 @@ class Main extends React.Component {
   };
 
   async componentDidMount() {
+    //로컬스토리지에 저장한 데이터를 받아옴
     const movies = await JSON.parse(localStorage.getItem("movies"));
     const apiUrl = localStorage.getItem("apiUrl");
     const lastScrollPosition = localStorage.getItem("lastScrollPosition");
-    movies.length === 0
+    //로컬스토리지에 저장한 데이터를 이용해 API를 불필요하게 받아오는 것 방지
+    movies === null
       ? this.getMovies()
       : this.setState({
           movies,
@@ -115,23 +117,23 @@ class Main extends React.Component {
           apiUrl,
         });
     window.scrollTo(0, lastScrollPosition);
-    console.log(this.state.movies);
-    console.log(lastScrollPosition);
-    this.scrollEvent();
   }
 
   componentDidUpdate() {
     this.state.isLoading && this.getMovies();
+    this.scrollEvent();
   }
 
   componentWillUnmount() {
-    this.removeScrollEvent();
+    //현재까지 받은 정보들을 로컬스토리지에 저장
     localStorage.setItem("movies", JSON.stringify(this.state.movies));
     localStorage.setItem("apiUrl", this.state.apiUrl);
     localStorage.setItem(
       "lastScrollPosition",
       document.scrollingElement.scrollTop
     );
+
+    this.removeScrollEvent();
     // 비동기 작업 중 페이지 이동시 오류 방지
     this._isMounted = false;
   }
@@ -140,11 +142,11 @@ class Main extends React.Component {
     const { isLoading, movies } = this.state;
     return (
       <section className="container">
-        <Loader name={"loader_scroll"} />
         {isLoading ? (
           <Loader name={"loader"} />
         ) : (
           <div className="contents">
+            <Loader name={"loader_scroll"} />
             <Genre getGenre={this.clickGetGenre} />
             <div className="movies">
               {movies.map((movie, index) => (
