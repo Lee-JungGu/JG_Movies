@@ -93,6 +93,8 @@
 
   .movie_info .info_info {
     width: 96%;
+    padding-bottom: 40px;
+    /* 포지션 */
     position: absolute;
     left: 50%;
     top: 20px;
@@ -142,7 +144,7 @@
 
   .movie_info .info_info .info_data .info_summary {
     margin-top: 28px;
-    padding-bottom: 40px;
+
     font-size: 18px;
     line-height: 1.5;
     position: absolute;

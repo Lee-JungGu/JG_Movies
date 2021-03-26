@@ -47,10 +47,10 @@ body,
 
 .movies {
   margin: 0 auto;
-  width: 96%;
+  width: 97%;
   height: 100%;
   display: flex;
-  justify-content: space-between;
+  justify-content: left;
   flex-wrap: wrap;
 }
 
@@ -60,6 +60,10 @@ body,
 
 .hide {
   display: none;
+}
+
+.active_text_color {
+  color: #ebcc66;
 }
 
 @media screen and (max-width: 767px) {

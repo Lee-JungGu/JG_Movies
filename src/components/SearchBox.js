@@ -12,7 +12,7 @@ function SearchBox({ searchUseKey, searchUseClick }) {
         onKeyUp={searchUseKey}
         required
       />
-      <span className="search_boder_bottom"></span>
+      <span className="search_border_bottom"></span>
       <button onClick={searchUseClick}>
         <i className="fas fa-search"></i>
       </button>

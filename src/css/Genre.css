@@ -24,21 +24,31 @@
 
 @media screen and (max-width: 767px) {
   .genre_menu {
-    margin: 0;
+    padding-left: 20px;
     width: 100%;
     position: fixed;
     top: 100px;
     z-index: 9999;
     background-color: rgba(18, 18, 18, 0.9);
     border-bottom: 1px solid #ebcc66;
+    overflow-x: scroll;
+    /* 스크롤바 숨기기 */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
+  /* 스크롤바 숨기기 */
+  .genre_menu::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera*/
+  }
+
   .genre_menu ul {
     width: 100%;
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: left;
-    position: relative;
-    left: 20px;
+  }
+  .genre_menu ul li:last-child {
+    padding-right: 20px;
   }
 }

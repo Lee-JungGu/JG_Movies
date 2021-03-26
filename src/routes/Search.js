@@ -4,7 +4,7 @@ import Loader from "../components/Loader";
 import SearchBox from "../components/SearchBox";
 import Movie from "../components/Movie";
 import Footer from "../components/Footer";
-import "../css/Search.css";
+import "../css/Search.css"; // Main.css에 중복되는 부분 있음.
 
 function Search() {
   const [isLoading, setIsLoading] = useState(false);
@@ -33,6 +33,7 @@ function Search() {
         setPageNumber(1);
       }
       setIsLoading(false);
+      window.scrollTo(0, 0);
     }
   };
   // 엔터키로 검색하는 함수
@@ -51,6 +52,9 @@ function Search() {
 
   //스크롤이 하단에 있을때 추가 영화를 가져오는 함수
   const getMoviePage = async () => {
+    //시작 로딩일때 작동 안함
+    if (isLoading) return;
+
     const BOTTOM_SPACE = 200;
     const scrollTop = document.scrollingElement.scrollTop;
     const scrollBottom =
@@ -60,6 +64,7 @@ function Search() {
     const loader = document.querySelector(".loader_scroll");
     const checkLoader = loader.className.includes("show");
     const MOVIES_PER_PAGE = 24;
+
     if (
       scrollTop >= scrollBottom &&
       movies.length === MOVIES_PER_PAGE * pageNumber &&
@@ -105,10 +110,15 @@ function Search() {
           data: { movies },
         },
       } = await axios.get(apiUrl);
-      if (movies === undefined) return setMovies([]);
-      if (isMounted.current) {
+      const notFindMsg = document.querySelector(".search_massage_box");
+
+      if (movies === undefined) {
+        notFindMsg.innerHTML = "No related movies..";
+        setMovies([]);
+      } else if (isMounted.current) {
         setMovies(movies);
         setIsLoading(false);
+        notFindMsg.classList.add("hide");
       }
     };
 
@@ -125,7 +135,9 @@ function Search() {
     const lastScrollPosition = localStorage.getItem(
       "lastScrollPosition_search"
     );
-    window.scrollTo(0, lastScrollPosition);
+    lastScrollPosition
+      ? window.scrollTo(0, lastScrollPosition)
+      : window.scrollTo(0, 0);
     return () => {
       window.localStorage.setItem(
         "lastScrollPosition_search",
@@ -135,8 +147,11 @@ function Search() {
   }, []);
 
   useEffect(() => {
-    // window.scrollTo(0, 0);
+    const notFindMsg = document.querySelector(".search_massage_box");
 
+    if (movies.length !== 0) {
+      notFindMsg.classList.add("hide");
+    }
     return () => {
       // 비동기 작업 중 페이지 이동시 오류 방지
       isMounted.current = false;
@@ -151,6 +166,9 @@ function Search() {
       ) : (
         <div className="contents">
           <Loader name={"loader_scroll"} />
+          <div className="search_massage_box">
+            <p className="search_massage"></p>
+          </div>
           <div className="movies">
             {movies.map((movie, index) => (
               <Movie

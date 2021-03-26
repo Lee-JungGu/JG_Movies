@@ -16,6 +16,7 @@ class Main extends React.Component {
     apiUrl:
       "https://yts.mx/api/v2/list_movies.json?sort_by=rating&limit=24&genre=all",
     pageNumber: 1,
+    genre: "all",
   };
 
   //영화를 가져오는 함수
@@ -43,6 +44,7 @@ class Main extends React.Component {
       this.setState({
         isLoading: true,
         apiUrl: `https://yts.mx/api/v2/list_movies.json?sort_by=rating&limit=24&genre=${genre}`,
+        genre,
       });
 
     this.animateScrollTop(0, 0);
@@ -58,9 +60,18 @@ class Main extends React.Component {
     });
   };
 
+  activeMenu = () => {
+    const genres = document.querySelectorAll(".genre_menu ul li");
+    genres.forEach((genre) => {
+      genre.children[0].dataset.genre === this.state.genre &&
+        genre.children[0].classList.add("active_text_color");
+    });
+  };
+
   //스크롤이 하단에 있을때 추가 영화를 가져오는 함수
   getMoviePage = async () => {
     if (this.state.isLoading) return;
+
     const BOTTOM_SPACE = 200;
     const scrollTop = document.scrollingElement.scrollTop;
     const scrollBottom =
@@ -103,9 +114,11 @@ class Main extends React.Component {
   };
 
   async componentDidMount() {
+    this.activeMenu();
     //로컬스토리지에 저장한 데이터를 받아옴
     const movies = await JSON.parse(localStorage.getItem("movies"));
     const apiUrl = localStorage.getItem("apiUrl");
+    const genre = localStorage.getItem("genre");
     const lastScrollPosition = localStorage.getItem("lastScrollPosition");
     //로컬스토리지에 저장한 데이터를 이용해 API를 불필요하게 받아오는 것 방지
     movies === null
@@ -115,19 +128,22 @@ class Main extends React.Component {
           isLoading: false,
           pageNumber: movies.length / 24,
           apiUrl,
+          genre,
         });
     window.scrollTo(0, lastScrollPosition);
   }
 
   componentDidUpdate() {
-    this.state.isLoading && this.getMovies();
+    this.activeMenu();
     this.scrollEvent();
+    this.state.isLoading && this.getMovies();
   }
 
   componentWillUnmount() {
     //현재까지 받은 정보들을 로컬스토리지에 저장
     localStorage.setItem("movies", JSON.stringify(this.state.movies));
     localStorage.setItem("apiUrl", this.state.apiUrl);
+    localStorage.setItem("genre", this.state.genre);
     localStorage.setItem(
       "lastScrollPosition",
       document.scrollingElement.scrollTop
@@ -140,14 +156,15 @@ class Main extends React.Component {
 
   render() {
     const { isLoading, movies } = this.state;
+
     return (
       <section className="container">
         {isLoading ? (
           <Loader name={"loader"} />
         ) : (
           <div className="contents">
-            <Loader name={"loader_scroll"} />
             <Genre getGenre={this.clickGetGenre} />
+            <Loader name={"loader_scroll"} />
             <div className="movies">
               {movies.map((movie, index) => (
                 <Movie
