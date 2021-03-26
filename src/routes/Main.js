@@ -60,6 +60,7 @@ class Main extends React.Component {
     });
   };
 
+  //현재 활성화된 메뉴 컬러 변경
   activeMenu = () => {
     const genres = document.querySelectorAll(".genre_menu ul li");
     genres.forEach((genre) => {
@@ -70,6 +71,7 @@ class Main extends React.Component {
 
   //스크롤이 하단에 있을때 추가 영화를 가져오는 함수
   getMoviePage = async () => {
+    //GNB메뉴 클릭시 로딩일때 작동을 막아 비동기 작업중 전환시 오류 해결
     if (this.state.isLoading) return;
 
     const BOTTOM_SPACE = 200;
@@ -96,11 +98,13 @@ class Main extends React.Component {
           data: { movies },
         },
       } = await axios.get(`${this.state.apiUrl}&page=${pageNumber + 1}`);
-      const newPage = [...this.state.movies, ...movies];
       const limitPage = 16;
       pageNumber < limitPage &&
         this._isMounted &&
-        this.setState({ movies: newPage, pageNumber: pageNumber + 1 });
+        this.setState({
+          movies: [...this.state.movies, ...movies],
+          pageNumber: pageNumber + 1,
+        });
       loader.classList.remove("show");
     }
   };
@@ -108,7 +112,6 @@ class Main extends React.Component {
   scrollEvent = () => {
     document.addEventListener("scroll", this.getMoviePage);
   };
-
   removeScrollEvent = () => {
     document.removeEventListener("scroll", this.getMoviePage);
   };
@@ -120,16 +123,18 @@ class Main extends React.Component {
     const apiUrl = localStorage.getItem("apiUrl");
     const genre = localStorage.getItem("genre");
     const lastScrollPosition = localStorage.getItem("lastScrollPosition");
+    const MOVIES_PER_PAGE = 24;
     //로컬스토리지에 저장한 데이터를 이용해 API를 불필요하게 받아오는 것 방지
     movies === null
       ? this.getMovies()
       : this.setState({
           movies,
           isLoading: false,
-          pageNumber: movies.length / 24,
+          pageNumber: movies.length / MOVIES_PER_PAGE,
           apiUrl,
           genre,
         });
+    //마지막 스크롤 위치로 이동
     window.scrollTo(0, lastScrollPosition);
   }
 
@@ -140,7 +145,7 @@ class Main extends React.Component {
   }
 
   componentWillUnmount() {
-    //현재까지 받은 정보들을 로컬스토리지에 저장
+    //현재까지 받은 정보들을 언마운트시 로컬스토리지에 저장
     localStorage.setItem("movies", JSON.stringify(this.state.movies));
     localStorage.setItem("apiUrl", this.state.apiUrl);
     localStorage.setItem("genre", this.state.genre);
