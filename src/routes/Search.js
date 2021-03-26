@@ -96,6 +96,14 @@ function Search() {
     };
   });
 
+  useEffect(() => {
+    const notFindMsg = document.querySelector(".search_massage_box");
+    movies.length !== 0 && notFindMsg.classList.add("hide");
+
+    if (!firstMounted.current)
+      return (notFindMsg.innerHTML = "No related movies..");
+  }, [movies]);
+
   // 검색시 해당 영화를 보여주고 없을시 빈 화면 출력
   useEffect(() => {
     const getMovies = async () => {
@@ -141,14 +149,6 @@ function Search() {
       isMounted.current = false;
     };
   }, []);
-
-  useEffect(() => {
-    const notFindMsg = document.querySelector(".search_massage_box");
-    movies.length !== 0 && notFindMsg.classList.add("hide");
-
-    if (!firstMounted.current)
-      return (notFindMsg.innerHTML = "No related movies..");
-  }, [movies]);
 
   return (
     <section className="container_sc">
